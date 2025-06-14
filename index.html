@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MathBoard - Phase 5</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f9fc;
+      color: #000;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .toolbar {
+      margin-bottom: 20px;
+      background-color: #e0e4ea;
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .toolbar input, .toolbar button, .toolbar select {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #999;
+      cursor: pointer;
+    }
+
+    canvas {
+      border: 2px solid #333;
+      background-color: #fff;
+      touch-action: none;
+      cursor: crosshair;
+      border-radius: 8px;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+      width: 95vw;
+      height: 60vh;
+    }
+
+    .quote {
+      font-style: italic;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    .note {
+      position: absolute;
+      width: 200px;
+      height: 150px;
+      background: #fffae6;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      padding: 8px;
+      resize: both;
+      overflow: auto;
+    }
+
+    .note textarea {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent;
+      resize: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧮 MathBoard - Phase 5</h1>
+  <p class="quote" id="quote">"Success is the sum of small efforts repeated day in and day out."</p>
+
+  <div class="toolbar">
+    <input type="color" id="colorPicker" value="#000000">
+    <input type="range" id="brushSize" min="1" max="20" value="2">
+    <button onclick="clearCanvas()">Clear</button>
+    <button onclick="saveImage()">Save</button>
+    <button onclick="undo()">Undo</button>
+    <button onclick="redo()">Redo</button>
+    <button onclick="addStickyNote()">Add Note</button>
+    <label>
+      <input type="checkbox" id="darkModeToggle"> Dark Mode
+    </label>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const colorPicker = document.getElementById('colorPicker');
+    const brushSize = document.getElementById('brushSize');
+
+    let drawing = false;
+    let undoStack = [], redoStack = [];
+
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+      fillCanvas(darkModeToggle.checked ? '#2c2c2c' : '#fff');
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function fillCanvas(color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    canvas.addEventListener('mousedown', e => {
+      drawing = true;
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+      saveState();
+    });
+
+    canvas.addEventListener('mousemove', e => {
+      if (!drawing) return;
+      ctx.lineWidth = brushSize.value;
+      ctx.strokeStyle = colorPicker.value;
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+    });
+
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('mouseout', () => drawing = false);
+
+    function clearCanvas() {
+      saveState();
+      fillCanvas(darkModeToggle.checked ? '#2c2c2c' : '#fff');
+    }
+
+    function saveImage() {
+      const link = document.createElement('a');
+      link.download = 'mathboard.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    function saveState() {
+      undoStack.push(canvas.toDataURL());
+      redoStack = [];
+    }
+
+    function undo() {
+      if (!undoStack.length) return;
+      redoStack.push(canvas.toDataURL());
+      const img = new Image();
+      img.src = undoStack.pop();
+      img.onload = () => ctx.drawImage(img, 0, 0);
+    }
+
+    function redo() {
+      if (!redoStack.length) return;
+      undoStack.push(canvas.toDataURL());
+      const img = new Image();
+      img.src = redoStack.pop();
+      img.onload = () => ctx.drawImage(img, 0, 0);
+    }
+
+    function addStickyNote() {
+      const note = document.createElement('div');
+      note.className = 'note';
+      note.style.top = Math.random() * 300 + 'px';
+      note.style.left = Math.random() * 300 + 'px';
+      note.innerHTML = '<textarea placeholder="Your note..."></textarea>';
+      document.body.appendChild(note);
+      note.draggable = true;
+
+      note.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', null);
+        e.dataTransfer.setDragImage(new Image(), 0, 0);
+        const rect = note.getBoundingClientRect();
+        note.offsetX = e.clientX - rect.left;
+        note.offsetY = e.clientY - rect.top;
+      });
+
+      document.addEventListener('dragover', e => {
+        e.preventDefault();
+        const dragging = document.querySelector('.note[draggable="true"]');
+        if (dragging) {
+          dragging.style.left = (e.clientX - dragging.offsetX) + 'px';
+          dragging.style.top = (e.clientY - dragging.offsetY) + 'px';
+        }
+      });
+    }
+
+    darkModeToggle.addEventListener('change', () => {
+      document.body.style.backgroundColor = darkModeToggle.checked ? '#1e1e1e' : '#f7f9fc';
+      document.body.style.color = darkModeToggle.checked ? '#fff' : '#000';
+      fillCanvas(darkModeToggle.checked ? '#2c2c2c' : '#fff');
+    });
+  </script>
+</body>
+</html>
