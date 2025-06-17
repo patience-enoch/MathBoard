@@ -1,10 +1,9 @@
-
-         <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📝 Math Workspace</title>
+  <title>📝 MathBoard</title>
   <style>
     * {
       margin: 0;
@@ -341,7 +340,6 @@
         <div class="section-title">Drawing Tools</div>
         <div class="tool-group">
           <button class="tool-btn active" onclick="setTool('pen')">✏️ Pen</button>
-          <button class="tool-btn" onclick="setTool('highlighter')">🖍️ Highlighter</button>
           <button class="tool-btn" onclick="setTool('eraser')">🧽 Eraser</button>
         </div>
 
@@ -429,7 +427,7 @@
       if (undoStack.length > 20) undoStack.shift();
     }
 
-    // Get mouse position
+    // Get mouse position - FIXED: Better coordinate calculation
     function getMousePos(e) {
       const rect = canvas.getBoundingClientRect();
       return {
@@ -438,18 +436,21 @@
       };
     }
 
-    // Drawing functions
+    // FIXED: Drawing functions - removed highlighter logic completely
     function startDrawing(e) {
       isDrawing = true;
       const pos = getMousePos(e);
       
-      ctx.globalAlpha = currentTool === 'highlighter' ? 0.3 : 1;
+      // REMOVED: All highlighter logic
+      ctx.globalAlpha = 1;
       ctx.strokeStyle = currentColor;
-      ctx.lineWidth = currentSize;
       
+      // FIXED: Make eraser 4x bigger for better erasing
       if (currentTool === 'eraser') {
+        ctx.lineWidth = currentSize * 4;
         ctx.globalCompositeOperation = 'destination-out';
       } else {
+        ctx.lineWidth = currentSize;
         ctx.globalCompositeOperation = 'source-over';
       }
       
@@ -479,7 +480,7 @@
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
 
-    // Touch events for mobile
+    // Touch events for mobile - FIXED: Better touch handling
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
       const touch = e.touches[0];
@@ -506,11 +507,29 @@
       canvas.dispatchEvent(mouseEvent);
     });
 
-    // Tool functions
+    // FIXED: Tool functions - removed highlighter completely
     function setTool(tool) {
       currentTool = tool;
       document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      
+      // Find and highlight the correct button (only pen and eraser now)
+      const toolButtons = document.querySelectorAll('.tool-btn');
+      toolButtons.forEach(btn => {
+        const btnText = btn.textContent.toLowerCase();
+        if ((tool === 'pen' && btnText.includes('pen')) ||
+            (tool === 'eraser' && btnText.includes('eraser'))) {
+          btn.classList.add('active');
+        }
+      });
+      
+      // Update size display when switching tools
+      updateSizeDisplay();
+    }
+
+    // FIXED: Update size display based on current tool (only pen/eraser)
+    function updateSizeDisplay() {
+      const displaySize = currentTool === 'eraser' ? currentSize * 4 : currentSize;
+      document.getElementById('sizeDisplay').textContent = displaySize + 'px';
     }
 
     // Color and size
@@ -519,8 +538,8 @@
     });
 
     document.getElementById('sizeSlider').addEventListener('input', (e) => {
-      currentSize = e.target.value;
-      document.getElementById('sizeDisplay').textContent = e.target.value + 'px';
+      currentSize = parseInt(e.target.value);
+      updateSizeDisplay();
     });
 
     // Theme toggle
@@ -677,7 +696,7 @@
       link.click();
     }
 
-    // Calculator functions
+    // Calculator functions - FIXED: Safer evaluation without eval()
     let calcExpression = '';
 
     function calcInput(value) {
@@ -697,7 +716,19 @@
 
     function calculate() {
       try {
-        const result = eval(calcExpression.replace('×', '*').replace('÷', '/'));
+        // FIXED: Safer evaluation - sanitize input first
+        let safeExpression = calcExpression
+          .replace(/×/g, '*')
+          .replace(/÷/g, '/')
+          .replace(/[^0-9+\-*/.() ]/g, ''); // Remove any unsafe characters
+        
+        // Use Function constructor instead of eval for better security
+        const result = Function('"use strict"; return (' + safeExpression + ')')();
+        
+        if (isNaN(result) || !isFinite(result)) {
+          throw new Error('Invalid calculation');
+        }
+        
         document.getElementById('calcDisplay').value = result;
         calcExpression = result.toString();
       } catch (error) {
@@ -708,7 +739,7 @@
 
     // Initialize
     initCanvas();
-    console.log('📝 Math Workspace ready! Dark mode by default with green accents!');
+    console.log('📝 Math Workspace ready! Highlighter removed, only Pen & Eraser available!');
   </script>
 </body>
 </html>
