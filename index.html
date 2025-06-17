@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -340,6 +339,619 @@
     }
 
     .answer-input {
-      font
+      font-size: 2rem;
+      padding: 15px 25px;
+      border: 3px solid var(--border-color);
+      border-radius: 15px;
+      text-align: center;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-weight: 600;
+      width: 200px;
+      transition: all 0.3s ease;
+    }
+
+    .answer-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    }
+
+    .submit-btn {
+      font-size: 1.2rem;
+      padding: 15px 30px;
+      background: linear-gradient(135deg, var(--success-color), #45a049);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+    }
+
+    .feedback-section {
+      background: var(--bg-secondary);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .feedback-message {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .feedback-correct {
+      color: var(--success-color);
+    }
+
+    .feedback-incorrect {
+      color: var(--error-color);
+    }
+
+    .next-btn {
+      padding: 12px 24px;
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .next-btn:hover {
+      background: #5a6fd8;
+      transform: translateY(-2px);
+    }
+
+    .celebration {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #f39c12;
+      animation: confetti-fall 3s linear forwards;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary), #764ba2);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        flex-direction: column;
+        padding: 15px;
+      }
+      
+      .sidebar {
+        width: 100%;
+        order: 2;
+      }
+      
+      .game-area {
+        min-width: auto;
+        order: 1;
+      }
+      
+      .problem-text {
+        font-size: 2rem;
+      }
+      
+      .answer-input {
+        font-size: 1.5rem;
+        width: 150px;
+      }
+      
+      .header {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .header-center {
+        order: -1;
+      }
+    }
+
+    .motivational-quotes {
+      background: var(--bg-tertiary);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .quote-text {
+      font-style: italic;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+
+    .quote-author {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <div class="app-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <i class="fas fa-calculator sparkle"></i>
+        <span>Math Board Pro</span>
+      </div>
+      
+      <div class="header-center">
+        <div class="score-display">
+          <i class="fas fa-star"></i>
+          <span>Score: <span id="totalScore">0</span></span>
+          <span style="margin-left: 15px;">Streak: <span id="streak">0</span></span>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <div class="accessibility-panel">
+          <button class="btn btn-secondary" id="accessibilityBtn">
+            <i class="fas fa-universal-access"></i>
+          </button>
+          <div class="accessibility-dropdown" id="accessibilityDropdown">
+            <div class="accessibility-option">
+              <input type="checkbox" id="dyslexiaMode">
+              <label for="dyslexiaMode">Dyslexia Font</label>
+            </div>
+            <div class="accessibility-option">
+              <input type="checkbox" id="highContrast">
+              <label for="highContrast">High Contrast</label>
+            </div>
+            <div class="accessibility-option">
+              <input type="checkbox" id="largeText">
+              <label for="largeText">Large Text</label>
+            </div>
+          </div>
+        </div>
+        
+        <button class="btn btn-secondary" id="themeToggle">
+          <i class="fas fa-moon"></i>
+        </button>
+        
+        <button class="btn btn-secondary" id="resetStats">
+          <i class="fas fa-refresh"></i>
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Difficulty Selection -->
+        <div class="difficulty-section">
+          <div class="section-title">
+            <i class="fas fa-layer-group"></i>
+            Difficulty Level
+          </div>
+          <div class="difficulty-buttons">
+            <button class="difficulty-btn active" data-difficulty="easy">
+              😊 Easy<br><small>1-10</small>
+            </button>
+            <button class="difficulty-btn" data-difficulty="medium">
+              🤔 Medium<br><small>1-50</small>
+            </button>
+            <button class="difficulty-btn" data-difficulty="hard">
+              😤 Hard<br><small>1-100</small>
+            </button>
+            <button class="difficulty-btn" data-difficulty="expert">
+              🔥 Expert<br><small>1-500</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- Operation Selection -->
+        <div class="difficulty-section">
+          <div class="section-title">
+            <i class="fas fa-calculator"></i>
+            Operations
+          </div>
+          <div class="operation-buttons">
+            <button class="operation-btn active" data-operation="addition">
+              <i class="fas fa-plus"></i> Add
+            </button>
+            <button class="operation-btn" data-operation="subtraction">
+              <i class="fas fa-minus"></i> Subtract
+            </button>
+            <button class="operation-btn" data-operation="multiplication">
+              <i class="fas fa-times"></i> Multiply
+            </button>
+            <button class="operation-btn" data-operation="division">
+              <i class="fas fa-divide"></i> Divide
+            </button>
+          </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-section">
+          <div class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            Statistics
+          </div>
+          <div class="stat-item">
+            <span>Problems Solved:</span>
+            <span class="stat-value" id="problemsSolved">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Correct Answers:</span>
+            <span class="stat-value" id="correctAnswers">0</span>
+          </div>
+          <div class="stat-item">
+            <span>Accuracy:</span>
+            <span class="stat-value" id="accuracy">0%</span>
+          </div>
+          <div class="stat-item">
+            <span>Best Streak:</span>
+            <span class="stat-value" id="bestStreak">0</span>
+          </div>
+        </div>
+
+        <!-- Motivational Quotes -->
+        <div class="motivational-quotes">
+          <div class="quote-text" id="motivationalQuote">
+            Mathematics is not about numbers, equations, or algorithms: it is about understanding.
+          </div>
+          <div class="quote-author" id="quoteAuthor">- William Paul Thurston</div>
+        </div>
+      </div>
+
+      <!-- Game Area -->
+      <div class="game-area">
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <!-- Problem Card -->
+        <div class="problem-card">
+          <div class="problem-text" id="problemText">
+            Click "New Problem" to start!
+          </div>
+          <div class="answer-section">
+            <input type="number" class="answer-input" id="answerInput" placeholder="?" disabled>
+            <button class="submit-btn" id="submitBtn" disabled>
+              <i class="fas fa-check"></i>
+              Check Answer
+            </button>
+            <button class="btn btn-primary" id="newProblemBtn">
+              <i class="fas fa-play"></i>
+              New Problem
+            </button>
+          </div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div class="feedback-section" id="feedbackSection">
+          <div class="feedback-message">
+            Welcome to Math Board Pro! 🧮
+          </div>
+          <div style="color: var(--text-secondary); font-size: 1rem;">
+            Select your difficulty and operation, then click "New Problem" to begin your math adventure!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Celebration Container -->
+    <div class="celebration" id="celebration"></div>
+  </div>
+
+  <script>
+    // Game State
+    let currentProblem = null;
+    let currentAnswer = null;
+    let difficulty = 'easy';
+    let operation = 'addition';
+    let totalScore = 0;
+    let streak = 0;
+    let bestStreak = 0;
+    let problemsSolved = 0;
+    let correctAnswers = 0;
+
+    // Motivational quotes for math learning
+    const mathQuotes = [
+      {
+        quote: "Mathematics is not about numbers, equations, or algorithms: it is about understanding.",
+        author: "William Paul Thurston"
+      },
+      {
+        quote: "Mathematics is the music of reason.",
+        author: "James Joseph Sylvester"
+      },
+      {
+        quote: "Pure mathematics is, in its way, the poetry of logical ideas.",
+        author: "Albert Einstein"
+      },
+      {
+        quote: "Mathematics is the language with which God has written the universe.",
+        author: "Galileo Galilei"
+      },
+      {
+        quote: "In mathematics you don't understand things. You just get used to them.",
+        author: "John von Neumann"
+      },
+      {
+        quote: "Mathematics is the art of giving the same name to different things.",
+        author: "Henri Poincaré"
+      },
+      {
+        quote: "The only way to learn mathematics is to do mathematics.",
+        author: "Paul Halmos"
+      }
+    ];
+
+    // Initialize the app
+    function init() {
+      loadStats();
+      updateDisplay();
+      rotateQuote();
+      setInterval(rotateQuote, 15000); // Change quote every 15 seconds
+      
+      // Load saved preferences
+      const savedTheme = localStorage.getItem('mathboard-theme');
+      if (savedTheme) {
+        document.body.setAttribute('data-theme', savedTheme);
+        updateThemeIcon();
+      }
+    }
+
+    // Generate random number based on difficulty
+    function getRandomNumber() {
+      const ranges = {
+        easy: { min: 1, max: 10 },
+        medium: { min: 1, max: 50 },
+        hard: { min: 1, max: 100 },
+        expert: { min: 1, max: 500 }
+      };
+      
+      const range = ranges[difficulty];
+      return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+    }
+
+    // Generate new math problem
+    function generateProblem() {
+      let num1 = getRandomNumber();
+      let num2 = getRandomNumber();
+      let problemText = '';
+      let answer = 0;
+
+      switch(operation) {
+        case 'addition':
+          answer = num1 + num2;
+          problemText = `${num1} + ${num2} = ?`;
+          break;
+        case 'subtraction':
+          // Ensure positive result
+          if (num1 < num2) [num1, num2] = [num2, num1];
+          answer = num1 - num2;
+          problemText = `${num1} - ${num2} = ?`;
+          break;
+        case 'multiplication':
+          // Use smaller numbers for multiplication
+          if (difficulty === 'easy') {
+            num1 = Math.floor(Math.random() * 10) + 1;
+            num2 = Math.floor(Math.random() * 10) + 1;
+          } else if (difficulty === 'medium') {
+            num1 = Math.floor(Math.random() * 12) + 1;
+            num2 = Math.floor(Math.random() * 12) + 1;
+          }
+          answer = num1 * num2;
+          problemText = `${num1} × ${num2} = ?`;
+          break;
+        case 'division':
+          // Generate division problems with whole number answers
+          answer = getRandomNumber();
+          if (difficulty === 'easy') answer = Math.min(answer, 10);
+          num2 = Math.floor(Math.random() * 10) + 1;
+          num1 = answer * num2;
+          problemText = `${num1} ÷ ${num2} = ?`;
+          break;
+      }
+
+      currentProblem = { num1, num2, operation };
+      currentAnswer = answer;
+
+      document.getElementById('problemText').textContent = problemText;
+      document.getElementById('answerInput').disabled = false;
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('answerInput').focus();
+      
+      // Clear previous answer
+      document.getElementById('answerInput').value = '';
+      
+      // Update progress bar
+      updateProgressBar();
+    }
+
+    // Check the user's answer
+    function checkAnswer() {
+      const userAnswer = parseInt(document.getElementById('answerInput').value);
+      const feedbackSection = document.getElementById('feedbackSection');
+      
+      if (isNaN(userAnswer)) {
+        showFeedback('Please enter a number! 🔢', 'feedback-incorrect');
+        return;
+      }
+
+      problemsSolved++;
+      
+      if (userAnswer === currentAnswer) {
+        // Correct answer
+        correctAnswers++;
+        streak++;
+        if (streak > bestStreak) bestStreak = streak;
+        
+        const points = getPoints();
+        totalScore += points;
+        
+        showFeedback(`🎉 Correct! +${points} points`, 'feedback-correct');
+        createCelebration();
+        
+        // Auto-generate next problem after 2 seconds
+        setTimeout(() => {
+          generateProblem();
+          clearFeedback();
+        }, 2000);
+        
+      } else {
+        // Incorrect answer
+        streak = 0;
+        showFeedback(`❌ Not quite! The answer is ${currentAnswer}`, 'feedback-incorrect');
+        
+        // Show next button
+        setTimeout(() => {
+          showNextButton();
+        }, 2000);
+      }
+      
+      updateDisplay();
+      saveStats();
+      
+      // Disable input and submit button
+      document.getElementById('answerInput').disabled = true;
+      document.getElementById('submitBtn').disabled = true;
+    }
+
+    // Calculate points based on difficulty and streak
+    function getPoints() {
+      const basePoints = {
+        easy: 10,
+        medium: 20,
+        hard: 30,
+        expert: 50
+      };
+      
+      const streakMultiplier = Math.min(streak, 10) * 0.1 + 1;
+      return Math.round(basePoints[difficulty] * streakMultiplier);
+    }
+
+    // Show feedback message
+    function showFeedback(message, className) {
+      const feedbackSection = document.getElementById('feedbackSection');
+      feedbackSection.innerHTML = `
+        <div class="feedback-message ${className}">
+          ${message}
+        </div>
+      `;
+    }
+
+    // Show next button
+    function showNextButton() {
+      const feedbackSection = document.getElementById('feedbackSection');
+      feedbackSection.innerHTML += `
+        <button class="next-btn" onclick="generateProblem(); clearFeedback();">
+          <i class="fas fa-arrow-right"></i> Next Problem
+        </button>
+      `;
+    }
+
+    // Clear feedback
+    function clearFeedback() {
+      const feedbackSection = document.getElementById('feedbackSection');
+      feedbackSection.innerHTML = `
+        <div class="feedback-message">
+          Great job! Keep going! 💪
+        </div>
+      `;
+    }
+
+    // Create celebration animation
+    function createCelebration() {
+      const celebration = document.getElementById('celebration');
+      const colors = ['#f39c12', '#e74c3c', '#9b59b6', '#3498db', '#2ecc71', '#f1c40f'];
+      
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = Math.random() * 2 + 's';
+        celebration.appendChild(confetti);
+        
+        // Remove confetti after animation
+        setTimeout(() => {
+          if (confetti.parentNode) {
+            confetti.parentNode.removeChild(confetti);
+          }
+        }, 3000);
+      }
+    }
+
+    // Update progress bar
+    function updateProgressBar() {
+      const progress = Math.min((problemsSolved % 10) * 10, 100);
+      document.getElementById('progressFill').style.width = progress + '%';
+    }
+
+    // Update display
+    function updateDisplay() {
+      document.getElementById('totalScore').textContent = totalScore;
+      document.getElementById('streak').textContent = streak;
+      document.getElementById('problemsSolved').textContent = problemsSolved;
+      document.getElementById('correctAnswers').textContent = correctAnswers;
+      document.getElementById('bestStreak').textContent = bestStreak;
+      
+      const accuracy = problemsSolved > 0 ? Math.round((correctAnswers / problemsSolved) * 100) : 0;
+      document.getElementById('accuracy').textContent = accuracy + '%
+
 
 
