@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📝 Math Workspace</title>
+  <title>📝 MathBoard</title>
   <style>
     * {
       margin: 0;
@@ -40,6 +40,8 @@
       align-items: center;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       border: 1px solid rgba(76, 175, 80, 0.3);
+      position: relative;
+      min-height: 70px; /* Added to ensure consistent header height */
     }
 
     .light-mode .header {
@@ -48,18 +50,48 @@
       border: 1px solid rgba(0,0,0,0.1);
     }
 
+    /* Enhanced Logo Styling */
     .logo {
-      font-size: 1.5rem;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.8rem;
       font-weight: bold;
       color: #4CAF50;
       display: flex;
       align-items: center;
       gap: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      letter-spacing: 1px;
+      padding: 5px 15px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      transition: all 0.3s ease;
+      z-index: 10;
+      white-space: nowrap;
+    }
+
+    .logo:hover {
+      transform: translate(-50%, -50%) scale(1.05);
+      text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    .light-mode .logo {
+      background: rgba(255,255,255,0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
 
     .header-buttons {
       display: flex;
       gap: 10px;
+      margin-left: auto;
+      z-index: 5;
+    }
+
+    .header-spacer {
+      width: 180px; /* Space for the logo */
     }
 
     .btn {
@@ -185,6 +217,7 @@
       gap: 10px;
       align-items: center;
       color: #e0e0e0;
+      flex-wrap: wrap;
     }
 
     .light-mode .canvas-toolbar {
@@ -209,6 +242,8 @@
       display: block;
       cursor: crosshair;
       background: #2a2a2a;
+      width: 100%;
+      height: auto;
     }
 
     .light-mode canvas {
@@ -351,12 +386,31 @@
       .canvas-area {
         min-width: auto;
       }
+      .header {
+        flex-direction: column;
+        gap: 15px;
+        padding-top: 60px;
+        padding-bottom: 15px;
+      }
+      .logo {
+        top: 15px;
+        transform: translateX(-50%);
+      }
+      .logo:hover {
+        transform: translateX(-50%) scale(1.05);
+      }
+      .header-buttons {
+        margin: 0 auto;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
+      <div class="header-spacer"></div>
       <div class="logo">📝 MathBoard</div>
       <div class="header-buttons">
         <button class="btn theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
@@ -390,7 +444,7 @@
 
         <div class="section-title">Calculator</div>
         <div class="calculator">
-          <input type="text" class="calc-display" id="calcDisplay" readonly>
+          <input type="text" class="calc-display" id="calcDisplay" readonly placeholder="0">
           <div class="calc-buttons">
             <button class="calc-btn" onclick="clearCalc()">C</button>
             <button class="calc-btn operator" onclick="calcInput('/')">÷</button>
@@ -448,6 +502,13 @@
     let isLightMode = false;
     let calcExpression = '';
 
+    // Ensure the canvas is responsive
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      const rect = container.getBoundingClientRect();
+      canvas.style.height = `${rect.width * 0.75}px`; // Maintain aspect ratio
+    }
+
     function showNewQuote() {
       currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
       const quote = quotes[currentQuoteIndex];
@@ -461,11 +522,16 @@
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       saveState();
+      updateSizeDisplay(); // Initialize size display
     }
 
     function saveState() {
-      undoStack.push(canvas.toDataURL());
-      if (undoStack.length > 20) undoStack.shift();
+      try {
+        undoStack.push(canvas.toDataURL());
+        if (undoStack.length > 20) undoStack.shift();
+      } catch (e) {
+        console.error("Error saving canvas state:", e);
+      }
     }
 
     function getMousePos(e) {
@@ -492,6 +558,12 @@
       
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
+      
+      // Draw a dot for single clicks
+      ctx.lineTo(pos.x + 0.1, pos.y + 0.1);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
     }
 
     function draw(e) {
@@ -510,10 +582,43 @@
       }
     }
 
+    // Improved touch events
+    function handleTouchStart(e) {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        });
+        startDrawing(mouseEvent);
+      }
+    }
+
+    function handleTouchMove(e) {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        });
+        draw(mouseEvent);
+      }
+    }
+
+    function handleTouchEnd(e) {
+      e.preventDefault();
+      stopDrawing();
+    }
+
     canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     function setTool(tool) {
       currentTool = tool;
@@ -547,11 +652,18 @@
       document.body.classList.toggle('light-mode', isLightMode);
       const themeBtn = document.querySelector('.theme-toggle');
       themeBtn.textContent = isLightMode ? '🌙 Dark Mode' : '☀️ Light Mode';
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = isLightMode ? 'white' : '#2a2a2a';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.putImageData(imageData, 0, 0);
-      saveState();
+      
+      try {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = isLightMode ? 'white' : '#2a2a2a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.putImageData(imageData, 0, 0);
+        saveState();
+      } catch (e) {
+        console.error("Error toggling theme:", e);
+        // Fallback if getImageData fails (e.g., due to CORS)
+        clearCanvas();
+      }
     }
 
     function addGrid() {
@@ -629,9 +741,9 @@
       ctx.globalCompositeOperation = 'source-over';
       const rows = 6;
       const cols = 4;
-      const cellWidth = 150;
+      const cellWidth = Math.min(150, (canvas.width - 100) / cols);
       const cellHeight = 40;
-      const startX = 50;
+      const startX = (canvas.width - (cols * cellWidth)) / 2;
       const startY = 50;
       for (let i = 0; i <= rows; i++) {
         ctx.beginPath();
@@ -649,9 +761,11 @@
     }
 
     function clearCanvas() {
-      ctx.fillStyle = isLightMode ? 'white' : '#2a2a2a';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      saveState();
+      if (confirm('Clear all work? This cannot be undone.')) {
+        ctx.fillStyle = isLightMode ? 'white' : '#2a2a2a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        saveState();
+      }
     }
 
     function undoLast() {
@@ -667,10 +781,16 @@
     }
 
     function saveWork() {
-      const link = document.createElement('a');
-      link.download = 'math-work.png';
-      link.href = canvas.toDataURL();
-      link.click();
+      try {
+        const link = document.createElement('a');
+        const date = new Date().toISOString().slice(0, 10);
+        link.download = `mathboard-work-${date}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (e) {
+        console.error("Error saving work:", e);
+        alert("Could not save your work. Please try again.");
+      }
     }
 
     function calcInput(value) {
@@ -684,7 +804,18 @@
     function calculate() {
       const display = document.getElementById('calcDisplay');
       try {
-        const result = eval(calcExpression);
+        // Safer calculation using Function constructor
+        const safeExpression = calcExpression
+          .replace(/×/g, '*')
+          .replace(/÷/g, '/')
+          .replace(/[^0-9+\-*/.() ]/g, ''); // Remove any unsafe characters
+        
+        const result = Function('"use strict"; return (' + safeExpression + ')')();
+        
+        if (isNaN(result) || !isFinite(result)) {
+          throw new Error('Invalid calculation');
+        }
+        
         display.value = result;
         calcExpression = result.toString();
       } catch (e) {
@@ -704,9 +835,17 @@
       calcExpression = calcExpression.slice(0, -1);
     }
 
-    setInterval(showNewQuote, 30000);
-    initCanvas();
+    // Handle window resize
+    window.addEventListener('resize', resizeCanvas);
+
+    // Initialize
+    window.addEventListener('load', function() {
+      resizeCanvas();
+      initCanvas();
+      setInterval(showNewQuote, 30000);
+    });
   </script>
 </body>
 </html>
+
 
