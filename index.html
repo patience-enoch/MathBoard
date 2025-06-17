@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📝 MathBoard</title>
+  <title>📝 Math Workspace</title>
   <style>
     * {
       margin: 0;
@@ -307,6 +307,40 @@
       color: white;
     }
 
+    .quote-display {
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-style: italic;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .quote-display:hover {
+      background: rgba(76, 175, 80, 0.2);
+      transform: scale(1.02);
+    }
+
+    .light-mode .quote-display {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .quote-text {
+      font-size: 1rem;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .quote-author {
+      font-size: 0.85rem;
+      color: #4CAF50;
+      font-weight: bold;
+    }
+
     @media (max-width: 768px) {
       .workspace {
         flex-direction: column;
@@ -322,11 +356,8 @@
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
     <div class="header">
-      <div class="logo">
-        📝 MathBoard
-      </div>
+      <div class="logo">📝 MathBoard</div>
       <div class="header-buttons">
         <button class="btn theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
         <button class="btn btn-secondary" onclick="clearCanvas()">Clear All</button>
@@ -334,8 +365,12 @@
       </div>
     </div>
 
+    <div class="quote-display" onclick="showNewQuote()">
+      <div class="quote-text" id="quoteText">Mathematics is not about numbers, equations, computations, or algorithms: it is about understanding.</div>
+      <div class="quote-author" id="quoteAuthor">- William Paul Thurston</div>
+    </div>
+
     <div class="workspace">
-      <!-- Tools Panel -->
       <div class="tools-panel">
         <div class="section-title">Drawing Tools</div>
         <div class="tool-group">
@@ -361,48 +396,48 @@
             <button class="calc-btn operator" onclick="calcInput('/')">÷</button>
             <button class="calc-btn operator" onclick="calcInput('*')">×</button>
             <button class="calc-btn" onclick="deleteLast()">⌫</button>
-            
             <button class="calc-btn" onclick="calcInput('7')">7</button>
             <button class="calc-btn" onclick="calcInput('8')">8</button>
             <button class="calc-btn" onclick="calcInput('9')">9</button>
             <button class="calc-btn operator" onclick="calcInput('-')">-</button>
-            
             <button class="calc-btn" onclick="calcInput('4')">4</button>
             <button class="calc-btn" onclick="calcInput('5')">5</button>
             <button class="calc-btn" onclick="calcInput('6')">6</button>
             <button class="calc-btn operator" onclick="calcInput('+')">+</button>
-            
             <button class="calc-btn" onclick="calcInput('1')">1</button>
             <button class="calc-btn" onclick="calcInput('2')">2</button>
             <button class="calc-btn" onclick="calcInput('3')">3</button>
             <button class="calc-btn operator" onclick="calculate()" style="grid-row: span 2;">=</button>
-            
             <button class="calc-btn" onclick="calcInput('0')" style="grid-column: span 2;">0</button>
             <button class="calc-btn" onclick="calcInput('.')">.</button>
           </div>
         </div>
       </div>
 
-      <!-- Canvas Area -->
       <div class="canvas-area">
         <div class="canvas-toolbar">
           <label>Color:</label>
           <input type="color" class="color-picker" id="colorPicker" value="#4CAF50">
-          
           <label>Size:</label>
           <input type="range" class="size-slider" id="sizeSlider" min="1" max="20" value="3">
           <span id="sizeDisplay">3px</span>
-          
           <button class="btn btn-secondary" onclick="undoLast()">↶ Undo</button>
         </div>
-        
         <canvas id="mathCanvas" width="800" height="600"></canvas>
       </div>
     </div>
   </div>
 
   <script>
-    // Canvas setup
+    const quotes = [
+      { text: "Mathematics is not about numbers, equations, computations, or algorithms: it is about understanding.", author: "William Paul Thurston" },
+      { text: "The only way to learn mathematics is to do mathematics.", author: "Paul Halmos" },
+      { text: "Mathematics is the music of reason.", author: "James Joseph Sylvester" },
+      { text: "Why was 6 afraid of 7? Because 7, 8, 9!", author: "Classic Math Joke" },
+      { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" }
+    ];
+
+    let currentQuoteIndex = 0;
     const canvas = document.getElementById('mathCanvas');
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
@@ -411,8 +446,15 @@
     let currentSize = 3;
     let undoStack = [];
     let isLightMode = false;
+    let calcExpression = '';
 
-    // Initialize canvas with dark background
+    function showNewQuote() {
+      currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+      const quote = quotes[currentQuoteIndex];
+      document.getElementById('quoteText').textContent = quote.text;
+      document.getElementById('quoteAuthor').textContent = `- ${quote.author}`;
+    }
+
     function initCanvas() {
       ctx.fillStyle = isLightMode ? 'white' : '#2a2a2a';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -421,13 +463,11 @@
       saveState();
     }
 
-    // Save state for undo
     function saveState() {
       undoStack.push(canvas.toDataURL());
       if (undoStack.length > 20) undoStack.shift();
     }
 
-    // Get mouse position - FIXED: Better coordinate calculation
     function getMousePos(e) {
       const rect = canvas.getBoundingClientRect();
       return {
@@ -436,16 +476,12 @@
       };
     }
 
-    // FIXED: Drawing functions - removed highlighter logic completely
     function startDrawing(e) {
       isDrawing = true;
       const pos = getMousePos(e);
-      
-      // REMOVED: All highlighter logic
       ctx.globalAlpha = 1;
       ctx.strokeStyle = currentColor;
       
-      // FIXED: Make eraser 4x bigger for better erasing
       if (currentTool === 'eraser') {
         ctx.lineWidth = currentSize * 4;
         ctx.globalCompositeOperation = 'destination-out';
@@ -474,65 +510,29 @@
       }
     }
 
-    // Mouse events
     canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
 
-    // Touch events for mobile - FIXED: Better touch handling
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const mouseEvent = new MouseEvent('mousedown', {
-        clientX: touch.clientX,
-        clientY: touch.clientY
-      });
-      canvas.dispatchEvent(mouseEvent);
-    });
-
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const mouseEvent = new MouseEvent('mousemove', {
-        clientX: touch.clientX,
-        clientY: touch.clientY
-      });
-      canvas.dispatchEvent(mouseEvent);
-    });
-
-    canvas.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      const mouseEvent = new MouseEvent('mouseup', {});
-      canvas.dispatchEvent(mouseEvent);
-    });
-
-    // FIXED: Tool functions - removed highlighter completely
     function setTool(tool) {
       currentTool = tool;
       document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-      
-      // Find and highlight the correct button (only pen and eraser now)
       const toolButtons = document.querySelectorAll('.tool-btn');
       toolButtons.forEach(btn => {
         const btnText = btn.textContent.toLowerCase();
-        if ((tool === 'pen' && btnText.includes('pen')) ||
-            (tool === 'eraser' && btnText.includes('eraser'))) {
+        if ((tool === 'pen' && btnText.includes('pen')) || (tool === 'eraser' && btnText.includes('eraser'))) {
           btn.classList.add('active');
         }
       });
-      
-      // Update size display when switching tools
       updateSizeDisplay();
     }
 
-    // FIXED: Update size display based on current tool (only pen/eraser)
     function updateSizeDisplay() {
       const displaySize = currentTool === 'eraser' ? currentSize * 4 : currentSize;
       document.getElementById('sizeDisplay').textContent = displaySize + 'px';
     }
 
-    // Color and size
     document.getElementById('colorPicker').addEventListener('change', (e) => {
       currentColor = e.target.value;
     });
@@ -542,15 +542,11 @@
       updateSizeDisplay();
     });
 
-    // Theme toggle
     function toggleTheme() {
       isLightMode = !isLightMode;
       document.body.classList.toggle('light-mode', isLightMode);
-      
       const themeBtn = document.querySelector('.theme-toggle');
       themeBtn.textContent = isLightMode ? '🌙 Dark Mode' : '☀️ Light Mode';
-      
-      // Update canvas background
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = isLightMode ? 'white' : '#2a2a2a';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -558,20 +554,17 @@
       saveState();
     }
 
-    // Template functions
     function addGrid() {
       ctx.strokeStyle = isLightMode ? '#e0e0e0' : '#555';
       ctx.lineWidth = 1;
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
-      
       for (let x = 0; x <= canvas.width; x += 20) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvas.height);
         ctx.stroke();
       }
-      
       for (let y = 0; y <= canvas.height; y += 20) {
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -586,7 +579,6 @@
       ctx.lineWidth = 1;
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
-      
       for (let y = 30; y < canvas.height; y += 30) {
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -601,37 +593,26 @@
       ctx.lineWidth = 1;
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
-      
-      // Draw axes
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      
       ctx.strokeStyle = isLightMode ? '#333' : '#ccc';
       ctx.lineWidth = 2;
-      
-      // X-axis
       ctx.beginPath();
       ctx.moveTo(0, centerY);
       ctx.lineTo(canvas.width, centerY);
       ctx.stroke();
-      
-      // Y-axis
       ctx.beginPath();
       ctx.moveTo(centerX, 0);
       ctx.lineTo(centerX, canvas.height);
       ctx.stroke();
-      
-      // Grid
       ctx.strokeStyle = isLightMode ? '#e0e0e0' : '#555';
       ctx.lineWidth = 1;
-      
       for (let x = 0; x <= canvas.width; x += 20) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvas.height);
         ctx.stroke();
       }
-      
       for (let y = 0; y <= canvas.height; y += 20) {
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -646,21 +627,18 @@
       ctx.lineWidth = 2;
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
-      
       const rows = 6;
       const cols = 4;
       const cellWidth = 150;
       const cellHeight = 40;
       const startX = 50;
       const startY = 50;
-      
       for (let i = 0; i <= rows; i++) {
         ctx.beginPath();
         ctx.moveTo(startX, startY + i * cellHeight);
         ctx.lineTo(startX + cols * cellWidth, startY + i * cellHeight);
         ctx.stroke();
       }
-      
       for (let j = 0; j <= cols; j++) {
         ctx.beginPath();
         ctx.moveTo(startX + j * cellWidth, startY);
@@ -670,18 +648,17 @@
       saveState();
     }
 
-    // Canvas functions
     function clearCanvas() {
-      if (confirm('Clear all work? This cannot be undone.')) {
-        initCanvas();
-      }
+      ctx.fillStyle = isLightMode ? 'white' : '#2a2a2a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      saveState();
     }
 
     function undoLast() {
       if (undoStack.length > 1) {
         undoStack.pop();
         const img = new Image();
-        img.onload = () => {
+        img.onload = function() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0);
         };
@@ -691,55 +668,45 @@
 
     function saveWork() {
       const link = document.createElement('a');
-      link.download = `math-work-${new Date().toISOString().slice(0, 10)}.png`;
+      link.download = 'math-work.png';
       link.href = canvas.toDataURL();
       link.click();
     }
 
-    // Calculator functions - FIXED: Safer evaluation without eval()
-    let calcExpression = '';
-
     function calcInput(value) {
-      calcExpression += value;
-      document.getElementById('calcDisplay').value = calcExpression;
-    }
-
-    function clearCalc() {
-      calcExpression = '';
-      document.getElementById('calcDisplay').value = '';
-    }
-
-    function deleteLast() {
-      calcExpression = calcExpression.slice(0, -1);
-      document.getElementById('calcDisplay').value = calcExpression;
+      const display = document.getElementById('calcDisplay');
+      if (value === '*') value = '×';
+      if (value === '/') value = '÷';
+      display.value += value;
+      calcExpression += (value === '×' ? '*' : value === '÷' ? '/' : value);
     }
 
     function calculate() {
+      const display = document.getElementById('calcDisplay');
       try {
-        // FIXED: Safer evaluation - sanitize input first
-        let safeExpression = calcExpression
-          .replace(/×/g, '*')
-          .replace(/÷/g, '/')
-          .replace(/[^0-9+\-*/.() ]/g, ''); // Remove any unsafe characters
-        
-        // Use Function constructor instead of eval for better security
-        const result = Function('"use strict"; return (' + safeExpression + ')')();
-        
-        if (isNaN(result) || !isFinite(result)) {
-          throw new Error('Invalid calculation');
-        }
-        
-        document.getElementById('calcDisplay').value = result;
+        const result = eval(calcExpression);
+        display.value = result;
         calcExpression = result.toString();
-      } catch (error) {
-        document.getElementById('calcDisplay').value = 'Error';
+      } catch (e) {
+        display.value = 'Error';
         calcExpression = '';
       }
     }
 
-    // Initialize
+    function clearCalc() {
+      document.getElementById('calcDisplay').value = '';
+      calcExpression = '';
+    }
+
+    function deleteLast() {
+      const display = document.getElementById('calcDisplay');
+      display.value = display.value.slice(0, -1);
+      calcExpression = calcExpression.slice(0, -1);
+    }
+
+    setInterval(showNewQuote, 30000);
     initCanvas();
-    console.log('📝 Math Workspace ready! Highlighter removed, only Pen & Eraser available!');
   </script>
 </body>
 </html>
+
